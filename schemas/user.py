@@ -1,11 +1,13 @@
 from pydantic import BaseModel
 
 
-class UserInSchema(BaseModel):
+class UserIn(BaseModel):
     username: str
     password: str
 
 
-class UserOutSchema(BaseModel):
-    name: str
+class UserOut(BaseModel):
+    id: str
+    username: str
+    token: str
 
