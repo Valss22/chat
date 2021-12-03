@@ -20,6 +20,7 @@ def get_payload(username: str) -> dict:
 
 async def create_user(user: UserIn):
     username: str = user.dict()['username']
+
     if await db['users'].find_one({'username': username}):
         return JSONResponse(
             content={'error': 'this user already exists'},
@@ -38,6 +39,7 @@ async def auth_user(user: UserIn):
     username: str = user.dict()['username']
     password: bytes = user.dict()['password'].encode()
     current_user = await db['users'].find_one({'username': username})
+
     if current_user:
         hashed_password: bytes = current_user['password']
         if bcrypt.checkpw(password, hashed_password):
