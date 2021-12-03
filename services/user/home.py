@@ -1,12 +1,4 @@
-from fastapi.encoders import jsonable_encoder
-from starlette.responses import JSONResponse
-
 from settings import db
-
-
-class User:
-    def __init__(self, **kwargs):
-        pass
 
 
 async def get_users():

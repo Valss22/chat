@@ -20,13 +20,13 @@ class PyObjectId(ObjectId):
         field_schema.update(type="string")
 
 
-class User(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias='_id')
-
-    username: str
-
-    class Config:
-        json_encoders = {ObjectId: str}
+# class User(BaseModel):
+#     id: PyObjectId = Field(default_factory=PyObjectId, alias='_id')
+#
+#     username: str
+#
+#     class Config:
+#         json_encoders = {ObjectId: str}
 
 
 class UserIn(BaseModel):
@@ -34,5 +34,7 @@ class UserIn(BaseModel):
     password: str
 
 
-class UserOut(User):
+class UserOut(BaseModel):
+    id: str
+    username: str
     token: str

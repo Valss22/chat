@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
-from schemas.user import UserIn, UserOut, User
+from schemas.user import UserIn, UserOut
 from services.user.auth import create_user, auth_user
 from services.user.home import get_users
 
