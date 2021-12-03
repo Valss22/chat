@@ -32,7 +32,7 @@ async def create_user(user: UserIn):
     new_user = await db['users'].insert_one(user.dict())
     payload = get_payload(username)
     user.__dict__['token'] = jwt.encode(payload, TOKEN_KEY)
-    user.__dict__['id'] = new_user.inserted_id
+    user.__dict__['id'] = str(new_user.inserted_id)
     return user
 
 
