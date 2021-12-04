@@ -29,10 +29,10 @@ async def create_user(user: UserIn):
     user.__dict__['password'] = bcrypt.hashpw(
         user.dict()['password'].encode(), SALT
     )
-    new_user = await db['users'].insert_one(user.dict())
+    created_user = await db['users'].insert_one(user.dict())
     payload = get_payload(username)
     user.__dict__['token'] = jwt.encode(payload, TOKEN_KEY)
-    user.__dict__['id'] = str(new_user.inserted_id)
+    user.__dict__['_id'] = created_user.inserted_id
     return user
 
 
@@ -46,7 +46,7 @@ async def auth_user(user: UserIn):
         if bcrypt.checkpw(password, hashed_password):
             payload = get_payload(username)
             user.__dict__['token'] = jwt.encode(payload, TOKEN_KEY)
-            user.__dict__['id'] = str(current_user['_id'])
+            user.__dict__['_id'] = current_user['_id']
             return user
         return JSONResponse(
             content={'error': 'Auth failed'},

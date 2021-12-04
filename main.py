@@ -1,8 +1,11 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
+
+from schemas.dialog import Dialog
 from schemas.user import UserIn, UserOut
+from services.dialog import get_dialogs
 from services.user.auth import create_user, auth_user
-from services.user.home import get_users
+
 
 app = FastAPI()
 
@@ -27,9 +30,9 @@ async def login_user(user: UserIn):
     return await auth_user(user)
 
 
-@app.get('/home/users/')
-async def list_users():
-    return await get_users()
+@app.get('/dialogs/', response_model=list[Dialog])
+async def list_dialogs():
+    return await get_dialogs()
 
 
 # @app.get('/home/{user_id}/', response_model=User)

@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 from bson import ObjectId
 from pydantic import BaseModel, Field
 
@@ -20,21 +18,15 @@ class PyObjectId(ObjectId):
         field_schema.update(type="string")
 
 
-# class User(BaseModel):
-#     id: PyObjectId = Field(default_factory=PyObjectId, alias='_id')
-#
-#     username: str
-#
-#     class Config:
-#         json_encoders = {ObjectId: str}
-
-
 class UserIn(BaseModel):
     username: str
     password: str
 
 
 class UserOut(BaseModel):
-    id: str
+    id: PyObjectId = Field(default_factory=PyObjectId, alias='_id')
     username: str
     token: str
+
+    class Config:
+        json_encoders = {ObjectId: str}
