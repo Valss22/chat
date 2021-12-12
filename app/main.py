@@ -2,10 +2,10 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from starlette.websockets import WebSocket
 
-from schemas.dialog import Dialog
-from schemas.user import UserIn, UserOut
-from services.dialog import get_dialogs
-from services.user.auth import create_user, auth_user
+from app.schemas.dialog import Dialog
+from app.schemas.user import UserIn, UserOut
+from app.services.dialog import get_dialogs
+from app.services.user.auth import create_user, auth_user
 
 app = FastAPI()
 
@@ -35,7 +35,7 @@ async def list_dialogs():
     return await get_dialogs()
 
 
-@app.websocket("/ws")
+@app.websocket('/ws')
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     while True:

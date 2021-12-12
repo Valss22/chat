@@ -1,4 +1,4 @@
-from settings import db
+from app.settings import db
 
 
 async def get_dialogs():

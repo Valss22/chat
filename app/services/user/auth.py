@@ -5,8 +5,8 @@ import jwt
 from starlette import status
 from starlette.responses import JSONResponse
 
-from schemas.user import UserIn
-from settings import db, TOKEN_KEY, SALT
+from app.schemas.user import UserIn
+from app.settings import db, TOKEN_KEY, SALT
 
 TOKEN_TIME = 40_000
 

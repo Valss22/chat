@@ -1,7 +1,7 @@
 from bson import ObjectId
 from pydantic import BaseModel, Field
 
-from schemas.user import PyObjectId
+from app.schemas.user import PyObjectId
 
 
 class Dialog(BaseModel):
