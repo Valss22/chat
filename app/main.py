@@ -6,6 +6,7 @@ from app.schemas.dialog import Dialog
 from app.schemas.user import UserIn, UserOut
 from app.services.dialog import get_dialogs
 from app.services.user.auth import create_user, auth_user
+from app.services.websocket.dialog import listen_dialog_websocket
 
 app = FastAPI()
 
@@ -35,9 +36,6 @@ async def list_dialogs():
     return await get_dialogs()
 
 
-@app.websocket('/ws')
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Message text was: {data}")
+@app.websocket('/ws/{user_id}')
+async def websocket_endpoint(websocket: WebSocket, user_id: str):
+    return await listen_dialog_websocket(websocket, user_id)
