@@ -1,4 +1,5 @@
 from time import time
+from typing import Optional
 
 import bcrypt
 import jwt
@@ -56,3 +57,16 @@ async def auth_user(user: UserIn):
         content={'error': 'User does not exists'},
         status_code=status.HTTP_400_BAD_REQUEST
     )
+
+
+async def get_current_user_id(Authorization: Optional[str]) -> Optional[str]:
+    if Authorization:
+        token = Authorization.split(' ')[1]
+        decoded_token: dict = jwt.decode(
+            token, TOKEN_KEY, algorithms='HS256'
+        )
+        current_user = await db['users'].find_one(
+            {'username': decoded_token['username']}
+        )
+        return current_user['_id']
+    raise ValueError
