@@ -45,3 +45,4 @@ async def websocket_endpoint(
         Authorization: Optional[str] = Header(None)
 ):
     return await listen_dialog_websocket(websocket, user_id, Authorization)
+

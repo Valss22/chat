@@ -68,5 +68,5 @@ async def get_current_user_id(Authorization: Optional[str]) -> Optional[str]:
         current_user = await db['users'].find_one(
             {'username': decoded_token['username']}
         )
-        return current_user['_id']
+        return str(current_user['_id'])
     raise ValueError
