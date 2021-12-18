@@ -53,9 +53,6 @@ async def listen_dialog_websocket(
         websocket: WebSocket
 ):
     await websocket.accept()
-    await websocket.send_text('heelloo')
-    await asyncio.sleep(5)
-    await websocket.send_text('hello222')
     users_id: dict = await websocket.receive_json()
 
     current_user_id: str = users_id['current']
