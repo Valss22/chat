@@ -12,9 +12,9 @@ from app.settings import db, TOKEN_KEY, SALT
 TOKEN_TIME = 40_000
 
 
-def get_payload(username: str) -> dict:
+def get_payload(user_id: str) -> dict:
     return {
-        'username': username,
+        '_id': user_id,
         'exp': time() + TOKEN_TIME
     }
 
@@ -31,7 +31,7 @@ async def create_user(user: UserIn):
         user.dict()['password'].encode(), SALT
     )
     created_user = await db['users'].insert_one(user.dict())
-    payload = get_payload(username)
+    payload = get_payload(str(created_user.inserted_id))
     user.__dict__['token'] = jwt.encode(payload, TOKEN_KEY)
     user.__dict__['_id'] = created_user.inserted_id
     return user
@@ -45,7 +45,7 @@ async def auth_user(user: UserIn):
     if current_user:
         hashed_password: bytes = current_user['password']
         if bcrypt.checkpw(password, hashed_password):
-            payload = get_payload(username)
+            payload = get_payload(str(current_user['_id']))
             user.__dict__['token'] = jwt.encode(payload, TOKEN_KEY)
             user.__dict__['_id'] = current_user['_id']
             return user
@@ -65,8 +65,5 @@ async def get_current_user_id(Authorization: Optional[str]) -> Optional[str]:
         decoded_token: dict = jwt.decode(
             token, TOKEN_KEY, algorithms='HS256'
         )
-        current_user = await db['users'].find_one(
-            {'username': decoded_token['username']}
-        )
-        return str(current_user['_id'])
+        return str(decoded_token['_id'])
     raise ValueError

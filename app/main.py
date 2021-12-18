@@ -39,10 +39,10 @@ async def list_dialogs():
     return await get_dialogs()
 
 
-@app.websocket('/ws/{user_id}')
+@app.websocket('/ws/{dialog_id}')
 async def websocket_endpoint(
-        websocket: WebSocket, user_id: str,
+        websocket: WebSocket, dialog_id: str,
         Authorization: Optional[str] = Header(None)
 ):
-    return await listen_dialog_websocket(websocket, user_id, Authorization)
+    return await listen_dialog_websocket(websocket)
 
