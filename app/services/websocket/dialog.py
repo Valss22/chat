@@ -35,7 +35,7 @@ class WebsocketDialogService:
         messages = db['messages'].find(
             {'$or': [{'users': self.users},
                      {'users': reversed_users}]}
-        ).sort('_id', -1)
+        ).sort('_id')
         messages = await messages.to_list(COUNT_INITIAL_MESSAGES)
 
         for msg in messages:

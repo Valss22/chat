@@ -40,9 +40,6 @@ async def list_dialogs():
 
 
 @app.websocket('/ws/{dialog_id}')
-async def websocket_endpoint(
-        websocket: WebSocket, dialog_id: str,
-        Authorization: Optional[str] = Header(None)
-):
+async def websocket_endpoint(websocket: WebSocket):
     return await listen_dialog_websocket(websocket)
 
