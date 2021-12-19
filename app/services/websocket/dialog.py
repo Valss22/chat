@@ -8,7 +8,7 @@ from app.services.user.auth import get_current_user_id
 from app.services.websocket.connection_manager import ConnectionManager
 from app.settings import db
 
-COUNT_INITIAL_MESSAGES: Final[int] = 20
+COUNT_INITIAL_MESSAGES: Final[int] = 40
 
 
 class WebsocketDialogService:
@@ -33,7 +33,7 @@ class WebsocketDialogService:
         messages = db['messages'].find(
             {'$or': [{'users': self.users},
                      {'users': reversed_users}]}
-        ).sort('_id')
+        ).sort('_id', -1)
         messages = await messages.to_list(COUNT_INITIAL_MESSAGES)
 
         for msg in messages:
@@ -43,7 +43,7 @@ class WebsocketDialogService:
             else:
                 msg['isMine'] = False
             del msg['users']
-        return messages
+        return messages[::-1]
 
 
 manager = ConnectionManager()
