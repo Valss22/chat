@@ -1,17 +1,14 @@
-import asyncio
-from typing import Optional, Final
+from typing import Final, Optional
 
 from bson import ObjectId
-from starlette.websockets import WebSocket
+from fastapi import Header
+from starlette.websockets import WebSocket, WebSocketDisconnect
 
-from app.services.dialog import get_interlocutor_id
 from app.services.user.auth import get_current_user_id
+from app.services.websocket.connection_manager import ConnectionManager
 from app.settings import db
 
 COUNT_INITIAL_MESSAGES: Final[int] = 20
-
-SENDER: Final[str] = 'sender'
-RECEIVER: Final[str] = 'receiver'
 
 
 class WebsocketDialogService:
@@ -49,32 +46,33 @@ class WebsocketDialogService:
         return messages
 
 
+manager = ConnectionManager()
+
+
 async def listen_dialog_websocket(
         websocket: WebSocket
 ):
-    await websocket.accept()
+    await manager.connect(websocket)
+
     users_id: dict = await websocket.receive_json()
 
     current_user_id: str = users_id['current']
     interlocutor_id: str = users_id['interlocutor']
 
-    dialog_service = WebsocketDialogService(
+    dialog = WebsocketDialogService(
         current_user_id, interlocutor_id
     )
-    messages = await dialog_service.get_messages(current_user_id)
+    messages = await dialog.get_messages(current_user_id)
     await websocket.send_json(messages)
 
-    while True:
-        message_data: dict = await websocket.receive_json()
-        text: str = message_data['text']
-        sender_id: str = message_data['senderId']
-        message_id = ObjectId()
-        dialog_service.save_message(text, message_id)
-        if sender_id == current_user_id:
-            is_mine = True
-        else:
-            is_mine = False
-        await websocket.send_json([
-            {'_id': str(message_id),
-             'text': text, 'isMine': is_mine}
-        ])
+    try:
+        while True:
+            text: str = await websocket.receive_text()
+            message_id = ObjectId()
+            dialog.save_message(text, message_id)
+            await manager.send_message(websocket, [
+                {'_id': str(message_id),
+                 'text': text, 'isMine': None}
+            ])
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
