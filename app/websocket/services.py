@@ -1,11 +1,8 @@
-from typing import Final, Optional
+from typing import Final
 
 from bson import ObjectId
-from fastapi import Header
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
-from app.services.user.auth import get_current_user_id
-from app.services.websocket.connection_manager import ConnectionManager
 from app.settings import db
 
 COUNT_INITIAL_MESSAGES: Final[int] = 40
@@ -46,13 +43,11 @@ class WebsocketDialogService:
         return messages[::-1]
 
 
-manager = ConnectionManager()
-
-
 async def listen_dialog_websocket(
-        websocket: WebSocket
+        websocket: WebSocket,
+        connection_manager
 ):
-    await manager.connect(websocket)
+    await connection_manager.connect(websocket)
 
     users_id: dict = await websocket.receive_json()
 
@@ -70,9 +65,9 @@ async def listen_dialog_websocket(
             text: str = await websocket.receive_text()
             message_id = ObjectId()
             dialog.save_message(text, message_id)
-            await manager.send_message(websocket, [
+            await connection_manager.send_message(websocket, [
                 {'_id': str(message_id),
                  'text': text, 'isMine': None}
             ])
     except WebSocketDisconnect:
-        manager.disconnect(websocket)
+        connection_manager.disconnect(websocket)
