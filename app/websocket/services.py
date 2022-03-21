@@ -1,0 +1,73 @@
+from typing import Final
+
+from bson import ObjectId
+from starlette.websockets import WebSocket, WebSocketDisconnect
+
+from app.settings import db
+
+COUNT_INITIAL_MESSAGES: Final[int] = 40
+
+
+class WebsocketDialogService:
+
+    def __init__(self, current_user_id: str, interlocutor_id: str):
+        self.users: dict[str, str] = {
+            'sender': current_user_id,
+            'receiver': interlocutor_id,
+        }
+
+    def save_message(self, text: str, message_id: ObjectId) -> None:
+        db['messages'].insert_one({
+            '_id': message_id, 'users': self.users,
+            'text': text,
+        })
+
+    async def get_messages(self, current_user_id: str) -> list[dict]:
+        reversed_users = {
+            'sender': self.users['receiver'],
+            'receiver': self.users['sender']
+        }
+        messages = db['messages'].find(
+            {'$or': [{'users': self.users},
+                     {'users': reversed_users}]}
+        ).sort('_id', -1)
+        messages = await messages.to_list(COUNT_INITIAL_MESSAGES)
+
+        for msg in messages:
+            msg['_id'] = str(msg['_id'])
+            if current_user_id == msg['users']['sender']:
+                msg['isMine'] = True
+            else:
+                msg['isMine'] = False
+            del msg['users']
+        return messages[::-1]
+
+
+async def listen_dialog_websocket(
+        websocket: WebSocket,
+        connection_manager
+):
+    await connection_manager.connect(websocket)
+
+    users_id: dict = await websocket.receive_json()
+
+    current_user_id: str = users_id['current']
+    interlocutor_id: str = users_id['interlocutor']
+
+    dialog = WebsocketDialogService(
+        current_user_id, interlocutor_id
+    )
+    messages = await dialog.get_messages(current_user_id)
+    await websocket.send_json(messages)
+
+    try:
+        while True:
+            text: str = await websocket.receive_text()
+            message_id = ObjectId()
+            dialog.save_message(text, message_id)
+            await connection_manager.send_message(websocket, [
+                {'_id': str(message_id),
+                 'text': text, 'isMine': None}
+            ])
+    except WebSocketDisconnect:
+        connection_manager.disconnect(websocket)
